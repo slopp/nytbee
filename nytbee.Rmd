@@ -1,0 +1,113 @@
+---
+title: "NYT Bee Genius Score"
+author: "Sean Lopp"
+date: "5/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+```
+
+The New York Times spelling bee is a game where users try to spell valid words using 7 letters. The 7 letters can be repeated any number of times. One of the 7 letters must be included in each word. In each puzzle, there is at least 1 pangram, which is a word that includes all 7 letters.
+
+Players get points based on the length of each word they can spell. Pangrams are worth the most points, and for me, are the most exciting part of the game. However, the game does not tell you how many pangrams there are in any given puzzle.
+
+The goal of this notebook is to see if I can determine a model that will predict the number of pangrams given the minimum score required to be a genius on the puzzle - a piece of information that IS available every day.
+
+What is the genius score?
+
+Because some letter combinations are not as conducive to creating words, it is not possible to compare one game to another based solely on point totals. Instead, the game applies a normalizing function that translates scores into categories. The rankings are based on a percentage of possible points in a puzzle. For example, in the spelling bee on 5/31/2021, the rankings and associated min points were:
+
+Beginner (0)\
+Good Start (5)\
+Moving Up (13)\
+Good (22)\
+Solid (40)\
+Nice (67)\
+Great (108)\
+Amazing (135)\
+Genius (188)
+
+Mathematically, we could say for each day, $d$, there is a function, $f$, such that for a given point total $x$ and max point total for the day, $X_d$, the player's category is determined:\
+
+$$
+C = f(x, X_d)
+$$
+
+My goal is to see if I can determine the number of pangrams, $p$, based on the point total required for the genius category. In other words:
+
+$$
+\hat{p} = \hat{f}(C_g)
+$$
+
+As an extension I could try to create a function, $f$ that uses richer attributes about the data to predict the number of pangrams, such as the set of letters or the required letter.
+
+## Get the data
+
+The website <https://nytbee.com> contains helpful information about each daily bee. The daily info is available at links like: https://nytbee.com/Bee_yyyymmdd.html
+
+My first task is to create a tidy dataset based on parsing these web pages. This is quite an involved task, so here are a few details:
+
+### functions to parse each day
+
+```{python}
+from bs4 import BeautifulSoup as bs
+import requests
+import pytesseract
+import io
+from PIL import Image
+
+def parse_colon(value):
+  val = value.split(":")[1]
+  return int(val)
+
+# to do... need to move to server 
+# to get ocr capabilities
+def parse_bee_image(bee_img, host = "https://nytbee.com/"):
+  img_suffix = parsed_page.find(id='bee-pic').img.attrs['src']
+  headers = {'user-agent': 'Chrome'}
+  img_url = requests.get(host+img_suffix, headers=headers)
+  img_bytes  = img_url.content
+  img = Image.open(io.BytesIO(img_bytes))
+  pytesseract.image_to_string(img)
+
+def parse_page(bee_url):
+  headers = {'user-agent': 'Chrome'}
+  page = requests.get(bee_url, headers=headers)
+  if page.status_code != 200:
+    print(bee_url+" failed with "+page.status_code)
+    return None
+  parsed_page = bs(page.content, 'html.parser')
+  key_vals = parsed_page.find_all('h3')[0:4]
+  vals = [parse_colon(v.string) for v in key_vals]
+  parsed = {
+    'date': parsed_page.find_all('h2')[1].string,
+    'num_pangram': vals[0],
+    'max_score': vals[1],
+    'max_wordss': vals[2],
+    'min_genius': vals[3]
+  }
+  return parsed
+
+
+```
+
+### Loop through each day and parse
+
+```{python}
+from datetime import date, timedelta
+ndays = 100
+days = [ (date.today() - timedelta(days=i)) for i in range(ndays)]
+urls = [ 'https://nytbee.com/Bee_'+d.__format__('%Y%m%d')+'.html' for d in days]  
+
+```
+
+To create a requirements.txt later:
+
+```{python}
+import subprocess
+subprocess.call([sys.executable, '-m', 'pip', 'list', '--format=freeze'])
+
+```
