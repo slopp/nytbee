@@ -17,6 +17,8 @@ library(dplyr)
 library(ggplot2)
 ```
 
+Code for post at https://github.com/slopp/nytbee
+
 The [New York Times Spelling Bee](https://www.nytimes.com/puzzles/spelling-bee) is a game where players try to spell valid words using 7 letters. The 7 letters can be repeated any number of times. In each game, one letter is required and must be included in any word. In each game there is at least 1 pangram, which is a word that includes all 7 letters at least once.
 
 Players get points based on the length of each word they can spell. Pangrams are worth extra points, and for me, are the most exciting part of the game. However, the game does not tell you how many pangrams exist in any given puzzle.
@@ -134,8 +136,8 @@ data %>%
     labs(
       title = "You can't use the genius score to predict the # of pangrams",
       subtitle = "Unless the score is north of 250, in which case you can look for at least 3",
-      x = "Number of Pangrams",
-      y = "Min Points to be Genius"
+      y = "Number of Pangrams",
+      x = "Min Points to be Genius"
     ) + 
     theme_minimal() 
 ```
