@@ -4,7 +4,7 @@ description: |
   More OCR in a quest for New York Times Spelling Bees
 author:
   - name: Sean Lopp
-date: 05-31-2021
+date: 06-04-2021
 output:
   distill::distill_article:
     self_contained: true
