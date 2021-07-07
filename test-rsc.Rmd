@@ -31,7 +31,7 @@ with open("o.pkl", 'rb') as f:
 with open("q.pkl", 'rb') as f:
     q_img = pickle.load(f)
 
-img2 = io.imread("image.png")
+img2 = io.imread("orig.png")
 gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
 # find the contours
