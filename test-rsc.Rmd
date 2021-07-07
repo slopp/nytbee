@@ -11,7 +11,7 @@ library(reticulate)
 
 This is a test RMD that relies on a content image that has some special Python sauce.
 
-![](image.png)
+![](orig.png)
 
 ```{python}
 from bs4 import BeautifulSoup as bs
